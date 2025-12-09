@@ -1,0 +1,40 @@
+/* Here are various declarations of GaugeMeter as css stylesheet. */
+
+.GaugeMeter {
+	position: Relative;
+	text-align: Center;
+	overflow: Hidden;
+	cursor: Default;
+	display: inline-block;
+}
+
+.GaugeMeter SPAN,
+.GaugeMeter B {
+	width: 54%;
+	position: absolute;
+	text-align: Center;
+	font-weight: 100;
+	overflow: Hidden;
+	white-space: NoWrap;
+	text-overflow: Ellipsis;
+	margin: 0 23%;
+}
+
+.GaugeMeter[data-style="Semi"] B {
+	width: 80%;
+	margin: 0 10%;
+}
+
+.GaugeMeter S,
+.GaugeMeter U {
+	text-decoration: None;
+	font-size: .40em;
+	font-weight: 200;
+	opacity: .6;
+}
+
+.GaugeMeter B {
+	color: #000;
+	font-weight: 200;
+	opacity: .8;
+}

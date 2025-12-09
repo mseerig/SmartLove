@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title></title>
+</head>
+
+<body>
+	<div id="content">
+		<!-- Inner Tab Content-->
+
+		<h3>
+			<span class="badge badge-primary" style="display: block">
+				<span class="lang-de">Cloud-Einstellungen</span>
+				<span class="lang-en">Cloud Configuration</span>
+			</span>
+		</h3>
+
+		<div class="">
+			<div class="row" style="margin-bottom: 25px;">
+				<!-- BLOCK LINKS-->
+				<div class="container col-lg-6">
+					<div class="container">
+						<span class="lang-de">Nachrichten-Puffer</span>
+						<span class="lang-en">Message buffer</span>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="container" style="padding-left: 35px;">
+						<input class="form-check-input form_system_disable" type="checkbox" value=""
+							id="input_cloud_message_buffer" />
+						<label class="form-check-label" for="input_cloud_message_buffer">
+							<span class="lang-de">Puffer aktiv</span>
+							<span class="lang-en">Buffer active</span>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="row" style="margin-bottom: 15px;">
+				<div class="col-lg-6">
+					<div class="container">
+						<span class="lang-de">Protokoll</span>
+						<span class="lang-en">Protocol</span>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="container">
+						<select class="form-control" id="select_cloud_protocol">
+							<option id="select_cloud_protocol_none" value="none">select..</option>
+							<option id="select_cloud_protocol_mqtt" value="mqtt">generic MQTT</option>
+							<option id="select_cloud_protocol_azure" value="azure">Microsoft Azure</option>
+							<option id="select_cloud_protocol_modbustcp_s" value="modbustcp_s">ModbusTCP Server</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="row" style="margin-bottom: 50px;">
+				<div class="col-lg-6">
+					<div class="container"></div>
+				</div>
+				<div class="col-lg-6">
+					<div class="container">
+						<button id="btn_cloud_select" type="button" class="btn btn-block btn-primary">
+							<span class="lang-de">Speichern</span>
+							<span class="lang-en">Save</span>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div id="spacer_mqtt" aria-hidden="true"></div>
+			<div id="spacer_azure" aria-hidden="true"></div>
+			<div id="spacer_modbustcp_s" aria-hidden="true"></div>
+
+		</div>
+	</div>
+</body>
+
+</html>

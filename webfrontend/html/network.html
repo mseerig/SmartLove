@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title></title>
+</head>
+
+<body>
+	<div id="content">
+		<!-- Inner Tab Content -->
+
+		<h3>
+			<span class="badge badge-primary" style="display: block">
+				<span class="lang-de">Ethernet-Einstellungen</span>
+				<span class="lang-en">Ethernet Configuration</span>
+			</span>
+		</h3>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="container"></div>
+			</div>
+			<div class="col-lg-6">
+				<div class="container">
+					<form class="align-self-end">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="" id="cb_eth_enbable" />
+							<label class="form-check-label" for="cb_eth_enbable">
+								<span class="lang-de">Ethernet aktivieren</span>
+								<span class="lang-en">Enable Ethernet</span>
+							</label>
+						</div>
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="gridRadios" id="radio_eth_dhcp"
+								value="option1" checked />
+							<label class="form-check-label" for="radio_eth_dhcp">
+								<span class="lang-de">dynamische IP</span>
+								<span class="lang-en">Dynamic IP</span>
+							</label>
+						</div>
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="gridRadios" id="radio_eth_staticIP"
+								value="option2" />
+							<label class="form-check-label" for="radio_eth_staticIP">
+								<span class="lang-de">statische IP</span>
+								<span class="lang-en">Static IP</span>
+							</label>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="container">
+					<form>
+						<div class="form-group">
+							<label for="input_eth_status">
+								<span class="lang-de">Verbindung</span>
+								<span class="lang-en">Connection</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_status" value="" readonly />
+						</div>
+						<div class="form-group">
+							<label for="input_eth_ip">
+								<span class="lang-de">IP-Addresse</span>
+								<span class="lang-en">IP-address</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_ip" value="" readonly />
+						</div>
+						<div class="form-group">
+							<label for="input_eth_gateway">
+								<span class="lang-de">Gateway</span>
+								<span class="lang-en">Gateway</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_gateway" value="" readonly />
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="container col-lg-6">
+				<div class="container">
+					<form class="align-self-end">
+
+						<div class="form-group">
+							<label for="input_eth_staticIP">
+								<span class="lang-de">IP</span>
+								<span class="lang-en">IP</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_staticIP" placeholder="" />
+						</div>
+						<div class="form-group">
+							<label for="input_eth_staticGateway">
+								<span class="lang-de">Gateway</span>
+								<span class="lang-en">Gateway</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_staticGateway" placeholder="" />
+						</div>
+						<div class="form-group">
+							<label for="input_eth_staticNetmask">
+								<span class="lang-de">Netzmaske</span>
+								<span class="lang-en">Netmask</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_staticNetmask" placeholder="" />
+						</div>
+						
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="gridRadios" id="radio_eth_dns_auto"
+								value="option1" checked />
+							<label class="form-check-label" for="radio_eth_dns_auto">
+								<span class="lang-de">DNS-Server automatisch beziehen</span>
+								<span class="lang-en">Obtain dns server automatically</span>
+							</label>
+						</div>
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="gridRadios" id="radio_eth_dns_manual"
+								value="option2" />
+							<label class="form-check-label" for="radio_eth_dns_manual">
+								<span class="lang-de">DNS-Server manuell einstellen</span>
+								<span class="lang-en">set dns server manually</span>
+							</label>
+						</div>
+						<div class="form-group">
+							<label for="input_eth_dns_main">
+								<span class="lang-de">Primärer DNS-Server</span>
+								<span class="lang-en">Primary DNS-Server</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_dns_main" placeholder="" />
+						</div>
+						<div class="form-group">
+							<label for="input_eth_dns_fallback">
+								<span class="lang-de">Fallback DNS-Server</span>
+								<span class="lang-en">Fallback DNS-Server</span>
+							</label>
+							<input type="text" class="form-control" id="input_eth_dns_fallback" placeholder="" />
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="container"></div>
+			</div>
+			<div class="col-lg-6">
+				<div class="container">
+					<button type="button" class="btn btn-block btn-primary" id="btn_eth_save">
+						<span class="lang-de">Speichern</span>
+						<span class="lang-en">Save</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<hr class="dotted">
+
+
+		<h3 style="margin-top: 50px;">
+			<span class="badge badge-primary" style="display: block">
+				<span class="lang-de">WLAN-Einstellungen</span>
+				<span class="lang-en">Wireless Configuration</span>
+			</span>
+		</h3>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="container"></div>
+			</div>
+			<div class="col-lg-6">
+				<div class="container">
+					<form class="align-self-end">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="" id="cb_wifi_enable" />
+							<label class="form-check-label" for="cb_wifi_enable">
+								<span class="lang-de">WLAN-Client aktivieren</span>
+								<span class="lang-en">Enable WLAN-client</span>
+							</label>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="container">
+
+					<form>
+						<div class="form-group">
+							<label for="input_wifi_status">
+								<span class="lang-de">Verbindung</span>
+								<span class="lang-en">Connection</span>
+							</label>
+							<input type="text" class="form-control" id="input_wifi_status" value="" readonly />
+						</div>
+						<div class="form-group">
+							<label for="input_wifi_ip">
+								<span class="lang-de">IP-Addresse</span>
+								<span class="lang-en">IP-address</span>
+							</label>
+							<input type="text" class="form-control" id="input_wifi_ip" value="" readonly />
+						</div>
+						<div class="form-group">
+							<label for="input_wifi_gateway">
+								<span class="lang-de">Gateway</span>
+								<span class="lang-en">Gateway</span>
+							</label>
+							<input type="text" class="form-control" id="input_wifi_gateway" value="" readonly />
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="container">
+					<form class="align-self-end">
+						<div class="form-group">
+							<label for="input_wifi_ssid">
+								<span class="lang-de">Name (SSID)</span>
+								<span class="lang-en">SSID</span>
+							</label>
+							<input type="text" class="form-control" id="input_wifi_ssid" placeholder="" />
+						</div>
+						<div class="form-group">
+							<label for="input_wifi_password">
+								<span class="lang-de">Passwort</span>
+								<span class="lang-en">Password</span>
+							</label>
+							<input type="password" class="form-control" id="input_wifi_password" placeholder="" />
+						</div>
+						
+					</form>
+				</div>
+			</div>
+			
+		</div>
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="container"></div>
+			</div>
+			<div class="col-lg-6">
+				<div class="container">
+					<button id="btn_wifi_save" type="button" class="btn btn-block btn-primary">
+						<span class="lang-de">Speichern</span>
+						<span class="lang-en">Save</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="spacer_cloud" aria-hidden="true" style="margin-top: 50px;"></div>
+
+	</div>
+</body>
+
+</html>

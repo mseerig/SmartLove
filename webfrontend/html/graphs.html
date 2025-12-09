@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+</head>
+
+<body>
+    <div id="content">
+        <h3>
+            <span class="badge badge-primary" style="display: block">
+                <span class="lang-de">Detaillierte Sensorinformationen</span>
+                <span class="lang-en">Detailed Sensor Information</span>
+            </span>
+        </h3>
+
+        <div class="container">
+
+            <div class="row d-flex justify-content-center" style="margin-bottom: 10px;">
+                <input id="reportranges" size="27" style="text-align:center;" />
+            </div>
+
+            <canvas id="graphs_detailed_graph" class="row" style="display: block;" ></canvas>
+
+            <div style="margin-top: 20px;" class="row">
+                <div class="col-lg-4">
+                    <button style="margin-bottom: 20px;" class="btn btn-block btn-primary" id="download_pdf_button">
+                        <span class="lang-de">PDF Herunterladen</span>
+                        <span class="lang-en">Download PDF</span>
+                    </button>
+                </div>
+                <div class="col-lg-4">
+                    <button style="margin-bottom: 20px;" class="btn btn-block btn-primary" id="download_xlsx_button">
+                        <span class="lang-de">XLSX Herunterladen</span>
+                        <span class="lang-en">Download XLSX</span>
+                    </button>
+                </div>
+                <div class="col-lg-4">
+                    <button style="margin-bottom: 20px;" class="btn btn-block btn-primary" id="download_csv_button">
+                        <span class="lang-de">CSV Herunterladen</span>
+                        <span class="lang-en">Download CSV</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

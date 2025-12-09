@@ -1,0 +1,14 @@
+/build
+/spiffs.bin
+/update.bin
+/sdkconfig.old
+/data_0.bin
+/data_1.bin
+/sdkconfig
+/debug.log
+/edc_flash_encryption_key.bin
+/edc_signing_key_v2.pem
+/edc_signing_key_v2.sha256
+/dependencies.lock
+/edc_flash_encryption_key.key
+.DS_Store

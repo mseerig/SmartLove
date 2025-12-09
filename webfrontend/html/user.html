@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title></title>
+</head>
+
+<body>
+	<div id="content">
+		<style>
+			.login-false {
+				background: #eaeaea;
+			}
+
+			.login-true {
+				background: #c5ffae;
+			}
+		</style>
+		<div style="margin-top: 130px;">
+			<div id="div_user_login">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-heading">
+							<h2 class="text-center">
+								<span class="lang-de">Login</span>
+								<span class="lang-en">Login</span>
+							</h2>
+						</div>
+						<hr />
+						<div class="modal-body">
+							<form action="" role="form">
+								<div class="form-group">
+									<div class="input-group mb-2 mr-sm-2">
+										<div class="input-group-prepend">
+											<div class="input-group-text"><img src="assets/user.png" width="15"
+													height="15" alt="" style="opacity:0.65;" /></div>
+										</div>
+										<input id="input_user_username" type="text" class="form-control"
+											placeholder="" />
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group mb-2 mr-sm-2">
+										<div class="input-group-prepend">
+											<div class="input-group-text"><img src="assets/lock.png" width="15"
+													height="15" alt="" style="opacity:0.65;" /></div>
+										</div>
+										<input id="input_user_password" type="password" class="form-control"
+											placeholder="" />
+
+									</div>
+
+								</div>
+
+								<div class="form-group text-center">
+									<button id="btn_user_login" type="button"
+										class="btn btn-block btn-primary">Login</button>
+								</div>
+
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="div_user_main" style="margin-bottom: 50px;">
+				<h2>
+					<span class="lang-de">Benutzerprofil</span>
+					<span class="lang-en">User management</span>
+				</h2>
+
+				<div class="row">
+					<div class="col-sm-6">
+						<h3>
+							<span class="badge badge-primary" style="display: block">
+								<span class="lang-de">Benutzerprofil</span>
+								<span class="lang-en">Your account</span>
+							</span>
+						</h3>
+						<div class="container">
+							<table class="table">
+								<tr>
+									<td>
+										<span class="lang-de">Benutzername</span>
+										<span class="lang-en">Username</span>
+									</td>
+									<td id="table_user_username"></td>
+								</tr>
+								<tr>
+									<td>
+										<span class="lang-de">apiToken</span>
+										<span class="lang-en">ApiToken</span>
+									</td>
+									<td class="text"><span id="table_user_apiToken"></span></td>
+								</tr>
+							</table>
+							<button id="btn_user_logout" type="button" class="btn btn-block btn-warning">Logout</button>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<h3>
+							<span class="badge badge-primary" style="display: block">
+								<span class="lang-de">Profil bearbeiten</span>
+								<span class="lang-en">Edit profile</span>
+							</span>
+						</h3>
+
+						<div class="container">
+
+							<h5>
+								<span class="lang-de">Zugangsdaten ändern</span>
+								<span class="lang-en">Change user credentials</span>
+							</h5>
+							<div style="color: gray">
+								<span class="lang-de">
+									<ul>
+										<li>Benutzername und Passwort mit Mindestlänge von 5 Zeichen</li>
+										<li>Passwörter müssen Buchstaben und Zahlen enthalten</li>
+									</ul>
+								</span>
+								<span class="lang-en">
+									<ul>
+										<li>Username and password with a minimum length of 5 characters</li>
+										<li>Passwords must contain letters and numbers</li>
+									</ul>
+								</span>
+							</div>
+							<form class="align-self-end">
+								<div class="form-group">
+									<label for="input_user_newUsername">
+										<span class="lang-de">Neuer Benutzername</span>
+										<span class="lang-en">New username</span>
+									</label>
+									<input type="text" class="form-control" id="input_user_newUsername"
+										placeholder="" />
+								</div>
+								<div class="form-group">
+									<label for="input_user_newPassword">
+										<span class="lang-de">Neues Passwort</span>
+										<span class="lang-en">New password</span>
+									</label>
+									<input type="password" class="form-control" id="input_user_newPassword"
+										placeholder="" />
+								</div>
+								<div class="form-group">
+									<label for="input_user_newPasswordRepeat">
+										<span class="lang-de">Neues Passwort wiederholen</span>
+										<span class="lang-en">Repeat new password</span>
+									</label>
+									<input type="password" class="form-control" id="input_user_newPasswordRepeat"
+										placeholder="" />
+								</div>
+								<button id="btn_user_change_credentials" type="button" class="btn btn-block btn-primary"
+									style="margin-top: 15px;">
+									<span class="lang-de">Speichern</span>
+									<span class="lang-en">Save</span>
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+idf_component_register(SRCS 
+                            "MyNetworkEventHandler.cpp" 
+                            "main.cpp"
+                            "EventLog.cpp"
+                            "Authenticator.cpp"
+                            "AzureController.cpp"
+                            "CloudController.cpp"
+                            "ConfigurationManager.cpp"
+                            "ExtensionController.cpp"
+                            "RtcController.cpp"
+                            "HMIController.cpp"
+                            "JsonRpcCallHandler.cpp"
+                            "ModbusTcpController.cpp"
+                            "MqttController.cpp"
+                            "NetworkController.cpp"
+                            "OtaController.cpp"
+                            "WebserverController.cpp"
+                       INCLUDE_DIRS 
+                              ".")
