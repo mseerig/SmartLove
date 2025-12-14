@@ -1,14 +1,66 @@
-/build
-/spiffs.bin
-/update.bin
-/sdkconfig.old
-/data_0.bin
-/data_1.bin
-/sdkconfig
-/debug.log
-/edc_flash_encryption_key.bin
-/edc_signing_key_v2.pem
-/edc_signing_key_v2.sha256
-/dependencies.lock
-/edc_flash_encryption_key.key
+# Build files
+build/
+sdkconfig
+sdkconfig.old
+*.bin
+*.elf
+*.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Logs
+*.log
+
+# Dependencies
+dependencies/
+managed_components/
+
+# Generated files
+compile_commands.json
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+temp/
+
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory

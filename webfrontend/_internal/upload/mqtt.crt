@@ -1,2 +1,0 @@
-Diese Datei darf nicht leer sein!
-Ist SSL aktiviert, so wird diese Datei eingelesen. Sollte diese jedoch ein nullptr sein, dann macht das esp-idf SSL wieder aus und es scheint, als hätte alles geklappt, obwohl SSL eigentlioch garnicht angeschalten war.
