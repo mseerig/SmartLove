@@ -171,14 +171,16 @@ void app_main(void)
     
     ESP_ERROR_CHECK(wifi_manager_init(&config));
     ESP_ERROR_CHECK(wifi_manager_register_event_callback(wifi_event_callback, NULL));
-    ESP_ERROR_CHECK(wifi_manager_start());
     
-    // Initialize MQTT client
+    // Initialize MQTT client BEFORE starting WiFi
     ESP_LOGI(TAG, "Initializing MQTT client...");
     ESP_ERROR_CHECK(mqtt_client_init());
     ESP_ERROR_CHECK(mqtt_client_register_message_callback(mqtt_message_handler, NULL));
     ESP_ERROR_CHECK(mqtt_client_register_status_callback(mqtt_status_handler, NULL));
     ESP_LOGI(TAG, "MQTT client initialized (will start when WiFi connects)");
+    
+    // Now start WiFi (which may trigger MQTT start)
+    ESP_ERROR_CHECK(wifi_manager_start());
     
     ESP_LOGI(TAG, "=================================");
     ESP_LOGI(TAG, "Application started successfully!");

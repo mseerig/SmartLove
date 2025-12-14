@@ -17,24 +17,27 @@ extern "C" {
 /**
  * @brief MQTT Broker Address
  * Format: mqtt://hostname or mqtts://hostname for TLS
+ * Using public HiveMQ broker (no authentication required)
  */
-#define MQTT_BROKER_URI         "2c219cce853346499b53f9a2efcce644.s1.eu.hivemq.cloud"
+#define MQTT_BROKER_URI         "mqtt://broker.hivemq.com"
 
 /**
  * @brief MQTT Broker Port
  * Default: 1883 (unencrypted), 8883 (TLS)
  */
-#define MQTT_BROKER_PORT        8883
+#define MQTT_BROKER_PORT        1883
 
 /**
  * @brief MQTT Username (leave empty if not required)
+ * Public HiveMQ broker doesn't require authentication
  */
-#define MQTT_USERNAME           "SmartLove"
+#define MQTT_USERNAME           ""
 
 /**
  * @brief MQTT Password (leave empty if not required)
+ * Public HiveMQ broker doesn't require authentication
  */
-#define MQTT_PASSWORD           "Y9u9ys#nIKBF8Y^c"
+#define MQTT_PASSWORD           ""
 
 // ============================================================================
 // Topic Configuration
@@ -145,20 +148,22 @@ extern "C" {
  * @brief LWT retain flag
  */
 #define MQTT_LWT_RETAIN         true
-
 // ============================================================================
 // TLS/SSL Configuration (if using mqtts://)
 // ============================================================================
 
 /**
  * @brief Enable TLS/SSL encryption
+ * Set to true when using mqtts:// protocol
+ * Currently disabled for public HiveMQ broker (mqtt://)
  */
 #define MQTT_USE_TLS            false
 
 /**
  * @brief Skip certificate verification (not recommended for production)
+ * Set to true for testing with self-signed certificates
  */
-#define MQTT_SKIP_CERT_VERIFY   false
+#define MQTT_SKIP_CERT_VERIFY   true
 
 // If MQTT_USE_TLS is true, you can provide certificates here:
 // extern const uint8_t mqtt_broker_cert_pem_start[] asm("_binary_mqtt_broker_cert_pem_start");

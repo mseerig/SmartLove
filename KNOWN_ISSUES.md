@@ -37,6 +37,59 @@ esp_log_level_set("captive_portal", ESP_LOG_DEBUG);
 
 ---
 
+### 3. MQTT TLS/SSL Zertifikatsprüfung funktioniert nicht
+
+**Status:** 🐛 Offen  
+**Priorität:** Medium  
+**Entdeckt:** 14. Dezember 2025
+
+**Beschreibung:**
+- ESP-IDF 4.4.7 mit mbedTLS erfordert explizite Zertifikatskonfiguration für TLS
+- Fehler: `esp-tls-mbedtls: No server verification option set in esp_tls_cfg_t structure`
+- `skip_cert_common_name_check = true` alleine reicht nicht aus
+- mbedTLS verlangt mindestens eine der folgenden Optionen:
+  - `use_global_ca_store = true` (System CA Store)
+  - `cert_pem` mit gültigem CA-Zertifikat
+  - Leerer String oder NULL in `cert_pem` wird als Parsing-Fehler abgelehnt
+
+**Betroffene Dateien:**
+- `components/mqtt_client/smartlove_mqtt.c` (TLS Konfiguration)
+- `components/mqtt_client/include/mqtt_config.h`
+
+**Problemstellung:**
+- HiveMQ Cloud benötigt `mqtts://` mit Port 8883
+- TLS-Verbindung ohne Zertifikatsprüfung ist in IDF 4.x schwierig
+- Verschiedene Versuche gescheitert:
+  - `cert_pem = NULL` → "No server verification option set"
+  - `cert_pem = ""` → mbedtls_x509_crt_parse error -0x2180
+  - `cert_pem = "-----BEGIN CERTIFICATE-----..."` → parse error -0x1100
+  - `transport = MQTT_TRANSPORT_OVER_SSL` → Konflikt mit URI scheme
+
+**Aktuelle Lösung:**
+- Verwendung des öffentlichen HiveMQ Brokers: `mqtt://broker.hivemq.com:1883`
+- Keine TLS-Verschlüsselung (`MQTT_USE_TLS = false`)
+- Keine Authentifizierung erforderlich
+- Für Tests und Entwicklung ausreichend
+
+**Zukünftige Lösung:**
+1. **Option A:** CA-Zertifikat einbinden
+   ```c
+   // ISRG Root X1 Zertifikat (Let's Encrypt) für HiveMQ Cloud
+   extern const uint8_t hivemq_root_cert_pem_start[] asm("_binary_hivemq_cert_pem_start");
+   extern const uint8_t hivemq_root_cert_pem_end[]   asm("_binary_hivemq_cert_pem_end");
+   mqtt_cfg.cert_pem = (const char *)hivemq_root_cert_pem_start;
+   ```
+
+2. **Option B:** Upgrade auf ESP-IDF 5.x
+   - Bessere TLS-API mit mehr Optionen
+   - `disable_ssl_verify` Flag verfügbar
+
+**Referenzen:**
+- ESP-IDF MQTT TLS Docs: https://docs.espressif.com/projects/esp-idf/en/v4.4.7/esp32/api-reference/protocols/mqtt.html
+- mbedTLS X509 Errors: https://github.com/Mbed-TLS/mbedtls/blob/development/include/mbedtls/x509.h
+
+---
+
 ### 2. Komischer Prefix vor "SmartLove" AP-Name
 
 **Status:** 🐛 Offen  

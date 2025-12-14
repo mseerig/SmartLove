@@ -1,14 +1,14 @@
 /**
- * @file smartlove_mqtt.c
+ * @file mqtt_client.c
  * @brief MQTT Client Implementation (IDF 4.x compatible)
  */
 
-#include "smartlove_mqtt.h"  // Our header
+#include "mqtt_client.h"    // Our header
 #include "mqtt_config.h"
 #include "esp_log.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "mqtt_client.h"     // ESP-IDF MQTT component
+#include "mqtt_client.h"    // ESP-IDF MQTT component
 #include "esp_mac.h"
 #include <string.h>
 #include <stdio.h>
@@ -108,36 +108,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
                 esp_mqtt_client_publish(mqtt_client, topic_status, "online",
                                       0, MQTT_LWT_QOS, MQTT_LWT_RETAIN);
             }
-            
-            // Send startup message with system information
-            char startup_msg[512];
-            esp_chip_info_t chip_info;
-            esp_chip_info(&chip_info);
-            
-            snprintf(startup_msg, sizeof(startup_msg),
-                     "{"
-                     "\"event\":\"startup\","
-                     "\"chip\":\"ESP32\","
-                     "\"cores\":%d,"
-                     "\"revision\":%d,"
-                     "\"features\":\"WiFi%s%s\","
-                     "\"idf_version\":\"%s\","
-                     "\"chip_id\":\"%s\","
-                     "\"free_heap\":%d,"
-                     "\"min_free_heap\":%d"
-                     "}",
-                     chip_info.cores,
-                     chip_info.revision,
-                     (chip_info.features & CHIP_FEATURE_BT) ? "+BT" : "",
-                     (chip_info.features & CHIP_FEATURE_BLE) ? "+BLE" : "",
-                     esp_get_idf_version(),
-                     chip_id,
-                     esp_get_free_heap_size(),
-                     esp_get_minimum_free_heap_size());
-            
-            esp_mqtt_client_publish(mqtt_client, topic_out, startup_msg,
-                                  0, MQTT_QOS_LEVEL, 0);
-            ESP_LOGI(TAG, "Startup message sent");
             break;
             
         case MQTT_EVENT_DISCONNECTED:
@@ -222,25 +192,6 @@ esp_err_t mqtt_client_init(void)
     if (strlen(MQTT_PASSWORD) > 0) {
         mqtt_cfg.password = MQTT_PASSWORD;
     }
-    
-#if MQTT_USE_TLS
-    // Configure TLS for IDF 4.x
-    // Note: URI with mqtts:// scheme automatically sets transport to SSL
-    // so we don't need to set mqtt_cfg.transport explicitly
-    mqtt_cfg.port = MQTT_BROKER_PORT;
-    
-#if MQTT_SKIP_CERT_VERIFY
-    // Completely disable certificate verification (for testing only!)
-    mqtt_cfg.use_global_ca_store = false;
-    mqtt_cfg.skip_cert_common_name_check = true;
-    mqtt_cfg.cert_pem = NULL;  // NULL = no cert verification
-    ESP_LOGW(TAG, "TLS enabled but certificate verification is DISABLED (insecure!)");
-#else
-    // Use system CA store for certificate validation
-    mqtt_cfg.use_global_ca_store = true;
-    ESP_LOGI(TAG, "TLS enabled with certificate verification");
-#endif
-#endif
     
     // Configure Last Will and Testament
     if (MQTT_LWT_ENABLED) {
