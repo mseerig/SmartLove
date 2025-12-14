@@ -1,5 +1,5 @@
 idf_component_register(
     SRCS "main.c"
     INCLUDE_DIRS "."
-    REQUIRES smartlove_utils
+    REQUIRES smartlove_utils wifi_manager
 )
