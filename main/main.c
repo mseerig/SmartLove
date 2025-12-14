@@ -7,6 +7,7 @@
  * - WiFi Manager with Captive Portal
  * - Auto-connect to saved WiFi
  * - Fallback to AP mode for configuration
+ * - MQTT client with chip-ID based topics
  */
 
 #include <stdio.h>
@@ -18,8 +19,81 @@
 #include "esp_chip_info.h"
 #include "smartlove_utils.h"
 #include "wifi_manager.h"
+#include "smartlove_mqtt.h"
 
 static const char *TAG = "SmartLove";
+
+// MQTT connection flag
+static bool mqtt_started = false;
+
+/**
+ * @brief MQTT message callback
+ * 
+ * Called when a message is received on SmartLove/<chipID>/in
+ */
+static void mqtt_message_handler(const char *topic, int topic_len,
+                                 const char *data, int data_len,
+                                 void *user_data)
+{
+    ESP_LOGI(TAG, "📨 MQTT Message received:");
+    ESP_LOGI(TAG, "   Topic: %.*s", topic_len, topic);
+    ESP_LOGI(TAG, "   Data: %.*s", data_len, data);
+    
+    // Example: Simple command parsing
+    if (data_len > 0 && data_len < 256) {
+        char message[256];
+        memcpy(message, data, data_len);
+        message[data_len] = '\0';
+        
+        ESP_LOGI(TAG, "💬 Processing command: %s", message);
+        
+        if (strcmp(message, "PING") == 0) {
+            mqtt_client_send("PONG");
+        } else if (strcmp(message, "STATUS") == 0) {
+            char status_msg[128];
+            snprintf(status_msg, sizeof(status_msg), 
+                    "ONLINE|Heap:%u|Uptime:%llu", 
+                    (unsigned int)esp_get_free_heap_size(),
+                    smartlove_get_uptime_ms() / 1000);
+            mqtt_client_send(status_msg);
+        }
+    }
+}
+
+/**
+ * @brief MQTT status callback
+ */
+static void mqtt_status_handler(mqtt_status_t status, void *user_data)
+{
+    switch (status) {
+        case MQTT_STATUS_CONNECTED:
+            ESP_LOGI(TAG, "🔗 MQTT Connected");
+            
+            char out_topic[128], in_topic[128], chip_id[32];
+            mqtt_client_get_chip_id(chip_id, sizeof(chip_id));
+            mqtt_client_get_out_topic(out_topic, sizeof(out_topic));
+            mqtt_client_get_in_topic(in_topic, sizeof(in_topic));
+            
+            ESP_LOGI(TAG, "   Chip ID: %s", chip_id);
+            ESP_LOGI(TAG, "   Publish to: %s", out_topic);
+            ESP_LOGI(TAG, "   Subscribe: %s", in_topic);
+            
+            mqtt_client_send("SmartLove device online!");
+            break;
+            
+        case MQTT_STATUS_DISCONNECTED:
+            ESP_LOGW(TAG, "🔌 MQTT Disconnected");
+            break;
+            
+        case MQTT_STATUS_CONNECTING:
+            ESP_LOGI(TAG, "🔄 MQTT Connecting...");
+            break;
+            
+        case MQTT_STATUS_ERROR:
+            ESP_LOGE(TAG, "❌ MQTT Connection Error");
+            break;
+    }
+}
 
 /**
  * @brief WiFi Manager event callback
@@ -29,68 +103,57 @@ static void wifi_event_callback(wifi_manager_event_t event, void *user_data)
     switch (event) {
         case WIFI_MANAGER_EVENT_STA_CONNECTED:
             ESP_LOGI(TAG, "📶 WiFi Connected!");
+            
+            if (!mqtt_started) {
+                ESP_LOGI(TAG, "Starting MQTT client...");
+                if (mqtt_client_start() == ESP_OK) {
+                    mqtt_started = true;
+                } else {
+                    ESP_LOGE(TAG, "Failed to start MQTT client");
+                }
+            }
             break;
+            
         case WIFI_MANAGER_EVENT_STA_DISCONNECTED:
             ESP_LOGW(TAG, "📵 WiFi Disconnected");
+            
+            if (mqtt_started) {
+                ESP_LOGI(TAG, "Stopping MQTT client...");
+                mqtt_client_stop();
+                mqtt_started = false;
+            }
             break;
+            
         case WIFI_MANAGER_EVENT_AP_STARTED:
             ESP_LOGI(TAG, "🔧 Configuration Portal Started");
-            ESP_LOGI(TAG, "   Connect to WiFi: 'SmartLove-Setup'");
+            ESP_LOGI(TAG, "   Connect to WiFi AP to configure");
             ESP_LOGI(TAG, "   Open browser at: http://192.168.4.1");
             break;
+            
         case WIFI_MANAGER_EVENT_AP_STOPPED:
             ESP_LOGI(TAG, "🔧 Configuration Portal Stopped");
             break;
+            
         case WIFI_MANAGER_EVENT_SCAN_DONE:
             ESP_LOGI(TAG, "🔍 WiFi Scan Complete");
             break;
+            
         case WIFI_MANAGER_EVENT_CONFIG_SAVED:
             ESP_LOGI(TAG, "💾 WiFi Configuration Saved");
             break;
+            
         default:
             break;
     }
 }
 
 /**
- * @brief Print chip information
- * 
- * This function is compatible with both IDF 4.x and 5.x
- */
-static void print_chip_info(void)
-{
-    esp_chip_info_t chip_info;
-    
-    esp_chip_info(&chip_info);
-    
-    ESP_LOGI(TAG, "=================================");
-    ESP_LOGI(TAG, "   SmartLove System Info");
-    ESP_LOGI(TAG, "=================================");
-    ESP_LOGI(TAG, "Chip: %s", CONFIG_IDF_TARGET);
-    ESP_LOGI(TAG, "Cores: %d", chip_info.cores);
-    ESP_LOGI(TAG, "Features: WiFi%s%s",
-             (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
-             (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
-    ESP_LOGI(TAG, "Silicon revision: %d", chip_info.revision);
-    ESP_LOGI(TAG, "Free heap: %u bytes", (unsigned int)esp_get_free_heap_size());
-    ESP_LOGI(TAG, "IDF Version: %s", esp_get_idf_version());
-    ESP_LOGI(TAG, "=================================");
-}
-
-/**
  * @brief Main application entry point
- * 
- * This is the starting point of the SmartLove application.
- * It demonstrates basic ESP-IDF functionality and serves as
- * a foundation for future features.
  */
 void app_main(void)
 {
     // Initialize utilities
     ESP_ERROR_CHECK(smartlove_utils_init());
-    
-    // Print system information
-    print_chip_info();
     
     ESP_LOGI(TAG, "=================================");
     ESP_LOGI(TAG, "   SmartLove Application");
@@ -101,15 +164,21 @@ void app_main(void)
     
     // Initialize WiFi Manager
     ESP_LOGI(TAG, "Initializing WiFi Manager...");
-    wifi_manager_config_t wifi_config = wifi_manager_get_default_config();
+    wifi_manager_config_t config = wifi_manager_get_default_config();
     
-    // Customize AP name if needed
-    snprintf(wifi_config.ap_ssid, sizeof(wifi_config.ap_ssid), "SmartLove-%02X%02X", 
+    snprintf(config.ap_ssid, sizeof(config.ap_ssid), "SmartLove-%02X%02X", 
              0xFF & (esp_random() >> 8), 0xFF & esp_random());
     
-    ESP_ERROR_CHECK(wifi_manager_init(&wifi_config));
+    ESP_ERROR_CHECK(wifi_manager_init(&config));
     ESP_ERROR_CHECK(wifi_manager_register_event_callback(wifi_event_callback, NULL));
     ESP_ERROR_CHECK(wifi_manager_start());
+    
+    // Initialize MQTT client
+    ESP_LOGI(TAG, "Initializing MQTT client...");
+    ESP_ERROR_CHECK(mqtt_client_init());
+    ESP_ERROR_CHECK(mqtt_client_register_message_callback(mqtt_message_handler, NULL));
+    ESP_ERROR_CHECK(mqtt_client_register_status_callback(mqtt_status_handler, NULL));
+    ESP_LOGI(TAG, "MQTT client initialized (will start when WiFi connects)");
     
     ESP_LOGI(TAG, "=================================");
     ESP_LOGI(TAG, "Application started successfully!");
@@ -122,7 +191,7 @@ void app_main(void)
         }
     } else {
         ESP_LOGI(TAG, "No WiFi configured yet");
-        ESP_LOGI(TAG, "📱 Connect to '%s' to configure", wifi_config.ap_ssid);
+        ESP_LOGI(TAG, "📱 Connect to '%s' to configure", config.ap_ssid);
     }
     
     ESP_LOGI(TAG, "=================================");
@@ -137,26 +206,45 @@ void app_main(void)
         
         const char *status_str = "Unknown";
         switch (wifi_status) {
-            case WIFI_MANAGER_IDLE: status_str = "Idle"; break;
-            case WIFI_MANAGER_SCANNING: status_str = "Scanning"; break;
-            case WIFI_MANAGER_CONNECTING: status_str = "Connecting"; break;
-            case WIFI_MANAGER_CONNECTED: status_str = "Connected ✓"; break;
-            case WIFI_MANAGER_DISCONNECTED: status_str = "Disconnected"; break;
-            case WIFI_MANAGER_AP_MODE: status_str = "AP Mode (Config)"; break;
-            case WIFI_MANAGER_ERROR: status_str = "Error"; break;
+            case WIFI_MANAGER_IDLE: 
+                status_str = "Idle"; 
+                break;
+            case WIFI_MANAGER_SCANNING: 
+                status_str = "Scanning"; 
+                break;
+            case WIFI_MANAGER_CONNECTING: 
+                status_str = "Connecting"; 
+                break;
+            case WIFI_MANAGER_CONNECTED: 
+                status_str = "Connected ✓"; 
+                break;
+            case WIFI_MANAGER_DISCONNECTED: 
+                status_str = "Disconnected"; 
+                break;
+            case WIFI_MANAGER_AP_MODE: 
+                status_str = "AP Mode (Config)"; 
+                break;
+            case WIFI_MANAGER_ERROR: 
+                status_str = "Error"; 
+                break;
         }
         
         ESP_LOGI(TAG, "⏱ Uptime: %llu s | WiFi: %s | Heap: %u bytes", 
                  uptime / 1000, status_str, (unsigned int)esp_get_free_heap_size());
         
-        // Wait 10 seconds
+        // Send MQTT heartbeat if connected
+        if (mqtt_client_is_connected() && counter % 6 == 0) { // Every 60 seconds
+            char heartbeat[128];
+            snprintf(heartbeat, sizeof(heartbeat),
+                    "Heartbeat|Uptime:%llu|Heap:%u|Counter:%d",
+                    uptime / 1000,
+                    (unsigned int)esp_get_free_heap_size(),
+                    counter);
+            mqtt_client_send(heartbeat);
+            ESP_LOGI(TAG, "📤 MQTT Heartbeat sent");
+        }
+        
         vTaskDelay(pdMS_TO_TICKS(10000));
         counter++;
-        
-        // TODO: Add your application logic here
-        // - Sensor reading
-        // - Cloud communication
-        // - Data processing
-        // - MQTT/HTTP requests
     }
 }
