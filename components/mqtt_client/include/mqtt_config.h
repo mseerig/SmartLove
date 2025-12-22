@@ -1,43 +1,25 @@
 /**
  * @file mqtt_config.h
- * @brief MQTT Configuration - Central place for all MQTT settings
+ * @brief MQTT Configuration - references smartlove_config.h
  */
 
 #ifndef MQTT_CONFIG_H
 #define MQTT_CONFIG_H
+
+#include "smartlove_config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // ============================================================================
-// MQTT Broker Configuration
+// MQTT Broker Configuration (from smartlove_config.h)
 // ============================================================================
 
-/**
- * @brief MQTT Broker Address
- * Format: mqtt://hostname or mqtts://hostname for TLS
- * Using public HiveMQ broker (no authentication required)
- */
-#define MQTT_BROKER_URI         "mqtt://broker.hivemq.com"
-
-/**
- * @brief MQTT Broker Port
- * Default: 1883 (unencrypted), 8883 (TLS)
- */
-#define MQTT_BROKER_PORT        1883
-
-/**
- * @brief MQTT Username (leave empty if not required)
- * Public HiveMQ broker doesn't require authentication
- */
-#define MQTT_USERNAME           ""
-
-/**
- * @brief MQTT Password (leave empty if not required)
- * Public HiveMQ broker doesn't require authentication
- */
-#define MQTT_PASSWORD           ""
+#define MQTT_BROKER_URI         SMARTLOVE_MQTT_BROKER_URI
+#define MQTT_BROKER_PORT        SMARTLOVE_MQTT_BROKER_PORT
+#define MQTT_USERNAME           SMARTLOVE_MQTT_USERNAME
+#define MQTT_PASSWORD           SMARTLOVE_MQTT_PASSWORD
 
 // ============================================================================
 // Topic Configuration

@@ -8,6 +8,7 @@
  * - Auto-connect to saved WiFi
  * - Fallback to AP mode for configuration
  * - MQTT client with chip-ID based topics
+ * - WS2812B LED control via MQTT JSON commands
  */
 
 #include <stdio.h>
@@ -20,6 +21,8 @@
 #include "smartlove_utils.h"
 #include "wifi_manager.h"
 #include "smartlove_mqtt.h"
+#include "led_controller.h"
+#include "button_handler.h"
 
 static const char *TAG = "SmartLove";
 
@@ -39,23 +42,49 @@ static void mqtt_message_handler(const char *topic, int topic_len,
     ESP_LOGI(TAG, "   Topic: %.*s", topic_len, topic);
     ESP_LOGI(TAG, "   Data: %.*s", data_len, data);
     
-    // Example: Simple command parsing
-    if (data_len > 0 && data_len < 256) {
-        char message[256];
+    // Process message
+    if (data_len > 0 && data_len < 512) {
+        char message[512];
         memcpy(message, data, data_len);
         message[data_len] = '\0';
         
         ESP_LOGI(TAG, "💬 Processing command: %s", message);
         
-        if (strcmp(message, "PING") == 0) {
+        // Try to parse as JSON for LED control
+        if (message[0] == '{') {
+            ESP_LOGI(TAG, "🎨 LED command detected");
+            esp_err_t ret = led_controller_process_json(message);
+            if (ret == ESP_OK) {
+                mqtt_client_send("{\"status\":\"ok\",\"type\":\"led\"}");
+            } else {
+                mqtt_client_send("{\"status\":\"error\",\"type\":\"led\",\"message\":\"Invalid JSON\"}");
+            }
+        }
+        // Simple text commands
+        else if (strcmp(message, "PING") == 0) {
             mqtt_client_send("PONG");
         } else if (strcmp(message, "STATUS") == 0) {
-            char status_msg[128];
+            char status_msg[256];
+            led_state_t led_state;
+            led_controller_get_state(&led_state);
+            
             snprintf(status_msg, sizeof(status_msg), 
-                    "ONLINE|Heap:%u|Uptime:%llu", 
+                    "{\"status\":\"online\",\"heap\":%u,\"uptime\":%llu,"
+                    "\"led\":{\"on\":%s,\"intensity\":%d,\"color\":{\"r\":%d,\"g\":%d,\"b\":%d}}}",
                     (unsigned int)esp_get_free_heap_size(),
-                    smartlove_get_uptime_ms() / 1000);
+                    smartlove_get_uptime_ms() / 1000,
+                    led_state.is_on ? "true" : "false",
+                    led_state.intensity,
+                    led_state.color.r,
+                    led_state.color.g,
+                    led_state.color.b);
             mqtt_client_send(status_msg);
+        } else if (strcmp(message, "LED_ON") == 0) {
+            led_controller_on();
+            mqtt_client_send("{\"status\":\"ok\",\"led\":\"on\"}");
+        } else if (strcmp(message, "LED_OFF") == 0) {
+            led_controller_off();
+            mqtt_client_send("{\"status\":\"ok\",\"led\":\"off\"}");
         }
     }
 }
@@ -178,6 +207,20 @@ void app_main(void)
     ESP_ERROR_CHECK(mqtt_client_register_message_callback(mqtt_message_handler, NULL));
     ESP_ERROR_CHECK(mqtt_client_register_status_callback(mqtt_status_handler, NULL));
     ESP_LOGI(TAG, "MQTT client initialized (will start when WiFi connects)");
+    
+    // Initialize LED controller
+    ESP_LOGI(TAG, "Initializing LED controller...");
+    ESP_ERROR_CHECK(led_controller_init());
+    ESP_LOGI(TAG, "LED controller initialized (GPIO %d, %d LEDs)", LED_GPIO_PIN, LED_STRIP_LENGTH);
+    
+    // Initialize button handler
+    ESP_LOGI(TAG, "Initializing button handler...");
+    esp_err_t ret = button_handler_init();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize button handler: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "Button handler initialized (GPIO 17)");
+    }
     
     // Now start WiFi (which may trigger MQTT start)
     ESP_ERROR_CHECK(wifi_manager_start());

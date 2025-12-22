@@ -13,4 +13,5 @@ idf_component_register(
         lwip
         esp_system
         log
+        smartlove_config
 )

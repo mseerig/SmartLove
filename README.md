@@ -6,9 +6,139 @@ ESP32-basiertes SmartLove Projekt - Kompatibel mit ESP-IDF 4.x und 5.x
 
 - ✅ ESP-IDF 4.x und 5.x kompatibel
 - ✅ Modulare Komponenten-Architektur
+- ✅ **Zentrale Konfiguration** (`smartlove_config.h`)
 - ✅ Umfassende System-Informationen
-- ✅ Utility-Funktionen für zukünftige Entwicklungen
-- ✅ Vorbereitet für WiFi, Bluetooth, Sensoren
+- ✅ WiFi Manager mit Captive Portal
+- ✅ MQTT Client (Public HiveMQ Broker)
+- ✅ WS2812B LED-Steuerung via MQTT
+- ✅ Button-Handler mit Tastendruck-Dauer
+- ✅ JSON-basierte Befehle
+- ✅ Vorbereitet für Bluetooth, Sensoren
+
+## ⚙️ Zentrale Konfiguration
+
+Alle GPIO-Pins, MQTT-Einstellungen, WiFi-Parameter und weitere Konfigurationen befinden sich in einer zentralen Datei:
+
+**📁 Datei**: `components/smartlove_config/include/smartlove_config.h`
+
+### Wichtige Einstellungen
+
+| Einstellung | Wert | Beschreibung |
+|-------------|------|--------------|
+| `SMARTLOVE_USE_WIFI_CONFIG_PORTAL` | 1 | WiFi-Portal aktivieren (0 = nur Default-Credentials) |
+| `SMARTLOVE_DEFAULT_WIFI_SSID` | "" | Standard WiFi SSID (leer = Portal nutzen) |
+| `SMARTLOVE_DEFAULT_WIFI_PASSWORD` | "" | Standard WiFi Passwort |
+| `SMARTLOVE_GPIO_LED_STRIP` | 27 | GPIO für WS2812B LEDs |
+| `SMARTLOVE_GPIO_BUTTON` | 17 | GPIO für Taster |
+| `SMARTLOVE_LED_COUNT` | 2 | Anzahl der LEDs |
+| `SMARTLOVE_MQTT_BROKER_URI` | mqtt://broker.hivemq.com | MQTT Broker URL |
+
+### WiFi-Modus Konfiguration
+
+**Mit Captive Portal (Standard):**
+```c
+#define SMARTLOVE_USE_WIFI_CONFIG_PORTAL    1
+```
+→ Wenn keine gespeicherten Credentials vorhanden, startet AP mit Portal
+
+**Ohne Portal (nur Default-Credentials):**
+```c
+#define SMARTLOVE_USE_WIFI_CONFIG_PORTAL    0
+#define SMARTLOVE_DEFAULT_WIFI_SSID         "MeinWiFi"
+#define SMARTLOVE_DEFAULT_WIFI_PASSWORD     "MeinPasswort"
+```
+→ Verbindet direkt mit den angegebenen Credentials
+
+## 🎨 LED Controller
+
+### Hardware
+- **GPIO Pin**: 27 (konfigurierbar in `smartlove_config.h`)
+- **LED Typ**: WS2812B (NeoPixel)
+- **Anzahl LEDs**: 2 (konfigurierbar)
+
+### MQTT Befehle
+
+**Topic**: `SmartLove/<CHIP_ID>/in`
+
+#### JSON LED-Steuerung
+Alle Parameter sind optional und können kombiniert werden:
+
+```json
+{"intensity": 255, "color": {"r": 255, "g": 0, "b": 0}}
+```
+- `intensity`: 0-255 (0 = LEDs AUS, >0 = LEDs AN)
+- `color`: RGB-Werte (0-255 pro Kanal)
+- `show`: Animation ("BLINK", "NONE")
+
+**Beispiele:**
+```json
+// Rot mit voller Helligkeit
+{"intensity": 255, "color": {"r": 255, "g": 0, "b": 0}}
+
+// Blau mit halber Helligkeit
+{"intensity": 128, "color": {"r": 0, "g": 0, "b": 255}}
+
+// Grün blinkend
+{"intensity": 200, "color": {"r": 0, "g": 255, "b": 0}, "show": "BLINK"}
+
+// LEDs ausschalten
+{"intensity": 0}
+
+// Nur Farbe ändern (Helligkeit bleibt)
+{"color": {"r": 255, "g": 255, "b": 0}}
+```
+
+#### Text-Befehle
+```
+LED_ON      - LEDs einschalten
+LED_OFF     - LEDs ausschalten
+STATUS      - System-Status mit LED-Zustand
+PING        - Verbindungstest (Antwort: PONG)
+```
+
+## 🔘 Button Handler
+
+### Hardware
+- **GPIO Pin**: 17 (konfigurierbar in `smartlove_config.h`)
+- **Logik**: Active LOW (interner Pull-Up)
+- **Debounce**: 50ms
+
+### MQTT Events
+
+Bei jedem Tastendruck wird ein JSON-Event gesendet:
+
+**Topic**: `SmartLove/<CHIP_ID>/out`
+
+```json
+{
+  "event": "button_press",
+  "duration_ms": 1500,
+  "uptime": 123456
+}
+```
+
+- `duration_ms`: Tastendruck-Dauer in Millisekunden
+- `uptime`: System-Uptime in Millisekunden
+
+## 📡 MQTT Verbindung
+
+- **Broker**: mqtt://broker.hivemq.com:1883 (öffentlich, kein TLS)
+- **Client ID**: `smartlove_<CHIP_ID>`
+- **Subscribe Topic**: `SmartLove/<CHIP_ID>/in`
+- **Publish Topic**: `SmartLove/<CHIP_ID>/out`
+- **Heartbeat**: Alle 60 Sekunden
+
+### Startup Message
+Bei Verbindung sendet der ESP32 automatisch System-Informationen:
+```json
+{
+  "event": "startup",
+  "chip_id": "30AEA4224918",
+  "idf_version": "v4.4.7",
+  "free_heap": 218684,
+  "model": "ESP32-D0WDQ6"
+}
+```
 
 ## 📋 Voraussetzungen
 

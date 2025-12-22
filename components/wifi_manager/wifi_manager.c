@@ -15,12 +15,21 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include <string.h>
+#include "smartlove_config.h"
 
 static const char *TAG = "wifi_manager";
 
-#define WIFI_MANAGER_NVS_NAMESPACE "wifi_config"
-#define WIFI_MANAGER_NVS_SSID_KEY "ssid"
-#define WIFI_MANAGER_NVS_PASSWORD_KEY "password"
+// Use settings from central config
+#define WIFI_MANAGER_NVS_NAMESPACE      SMARTLOVE_NVS_WIFI_NAMESPACE
+#define WIFI_MANAGER_NVS_SSID_KEY       "ssid"
+#define WIFI_MANAGER_NVS_PASSWORD_KEY   "password"
+
+// Default credentials from central config
+#define WIFI_DEFAULT_SSID               SMARTLOVE_DEFAULT_WIFI_SSID
+#define WIFI_DEFAULT_PASSWORD           SMARTLOVE_DEFAULT_WIFI_PASSWORD
+
+// Feature flag: Enable/disable WiFi config portal
+#define USE_WIFI_CONFIG                 SMARTLOVE_USE_WIFI_CONFIG_PORTAL
 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
@@ -176,6 +185,19 @@ esp_err_t wifi_manager_start(void)
         }
     }
 
+#if !USE_WIFI_CONFIG
+    // WiFi Config Portal disabled - try to use default credentials
+    if (strlen(WIFI_DEFAULT_SSID) > 0) {
+        ESP_LOGI(TAG, "WiFi Config Portal disabled, using default credentials...");
+        ESP_LOGI(TAG, "Connecting to: %s", WIFI_DEFAULT_SSID);
+        return wifi_manager_connect(WIFI_DEFAULT_SSID, WIFI_DEFAULT_PASSWORD, true);
+    } else {
+        ESP_LOGE(TAG, "WiFi Config Portal disabled but no default credentials set!");
+        ESP_LOGE(TAG, "Please set SMARTLOVE_DEFAULT_SSID and SMARTLOVE_DEFAULT_PASSWORD in smartlove_config.h");
+        g_status = WIFI_MANAGER_ERROR;
+        return ESP_ERR_INVALID_STATE;
+    }
+#else
     // No credentials, start AP mode
     ESP_LOGI(TAG, "No saved credentials, starting AP mode...");
     
@@ -211,6 +233,7 @@ esp_err_t wifi_manager_start(void)
     ESP_LOGI(TAG, "Connect to configure WiFi at: http://192.168.4.1");
     
     return ESP_OK;
+#endif
 }
 
 esp_err_t wifi_manager_stop(void)
