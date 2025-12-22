@@ -93,21 +93,25 @@ extern "C" {
  * Format: mqtt://hostname or mqtts://hostname for TLS
  */
 #define SMARTLOVE_MQTT_BROKER_URI           "mqtt://broker.hivemq.com"
+//#define SMARTLOVE_MQTT_BROKER_URI           "mqtts://2c219cce853346499b53f9a2efcce644.s1.eu.hivemq.cloud"
 
 /**
  * @brief MQTT Broker Port
  */
 #define SMARTLOVE_MQTT_BROKER_PORT          1883
+//#define SMARTLOVE_MQTT_BROKER_PORT          8883
 
 /**
  * @brief MQTT Username (empty if not required)
  */
 #define SMARTLOVE_MQTT_USERNAME             ""
+//#define SMARTLOVE_MQTT_USERNAME             "SmartLove"
 
 /**
  * @brief MQTT Password (empty if not required)
  */
 #define SMARTLOVE_MQTT_PASSWORD             ""
+//#define SMARTLOVE_MQTT_PASSWORD             "oy2U!KtytbQeXp"
 
 /**
  * @brief MQTT Topic prefix
@@ -235,7 +239,7 @@ extern "C" {
  * @brief LED default ON state on startup
  * 0 = OFF, 1 = ON
  */
-#define SMARTLOVE_LED_DEFAULT_ON            0
+#define SMARTLOVE_LED_DEFAULT_ON            1
 
 /**
  * @brief LED blink animation interval (ms)
