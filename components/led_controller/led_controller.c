@@ -11,6 +11,10 @@
 #include "cJSON.h"
 #include <string.h>
 
+// Forward declarations for static functions
+static void start_animation_task(void);
+static void stop_animation_task(void);
+
 static const char *TAG = "led_controller";
 
 // LED Controller State - initialized with config defaults
@@ -22,6 +26,18 @@ static led_state_t s_led_state = {
         .g = SMARTLOVE_LED_DEFAULT_COLOR_G,
         .b = SMARTLOVE_LED_DEFAULT_COLOR_B
     },
+    .fade_start = {
+        .r = SMARTLOVE_LED_DEFAULT_COLOR_R,
+        .g = SMARTLOVE_LED_DEFAULT_COLOR_G,
+        .b = SMARTLOVE_LED_DEFAULT_COLOR_B
+    },
+    .fade_target = {
+        .r = SMARTLOVE_LED_DEFAULT_COLOR_R,
+        .g = SMARTLOVE_LED_DEFAULT_COLOR_G,
+        .b = SMARTLOVE_LED_DEFAULT_COLOR_B
+    },
+    .fade_time_ms = 0,
+    .fade_elapsed_ms = 0,
     .animation = SMARTLOVE_LED_DEFAULT_ANIMATION
 };
 
@@ -71,33 +87,70 @@ static void animation_task(void *pvParameters)
     
     ESP_LOGI(TAG, "Animation task started");
 
+    TickType_t last_wake = xTaskGetTickCount();
     while (1) {
         if (s_led_state.animation == LED_ANIM_BLINK) {
-            // Toggle blink state
             blink_state = !blink_state;
-            
             if (blink_state) {
-                // Turn LEDs on with current color
                 bool was_on = s_led_state.is_on;
                 s_led_state.is_on = true;
                 apply_leds();
                 s_led_state.is_on = was_on;
             } else {
-                // Turn LEDs off
                 ws2812_clear(s_led_strip);
             }
-            
-            vTaskDelay(pdMS_TO_TICKS(500)); // 500ms interval
+            vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(500));
+        } else if (s_led_state.animation == LED_ANIM_FADE) {
+            // Fade logic
+            uint32_t step_ms = 20;
+            if (s_led_state.fade_time_ms == 0) {
+                s_led_state.color = s_led_state.fade_target;
+                s_led_state.animation = LED_ANIM_NONE;
+                apply_leds();
+                continue;
+            }
+            if (s_led_state.fade_elapsed_ms >= s_led_state.fade_time_ms) {
+                s_led_state.color = s_led_state.fade_target;
+                s_led_state.animation = LED_ANIM_NONE;
+                apply_leds();
+                continue;
+            }
+            float t = (float)s_led_state.fade_elapsed_ms / (float)s_led_state.fade_time_ms;
+            uint8_t r = (uint8_t)((1.0f - t) * s_led_state.fade_start.r + t * s_led_state.fade_target.r);
+            uint8_t g = (uint8_t)((1.0f - t) * s_led_state.fade_start.g + t * s_led_state.fade_target.g);
+            uint8_t b = (uint8_t)((1.0f - t) * s_led_state.fade_start.b + t * s_led_state.fade_target.b);
+            led_rgb_t prev = s_led_state.color;
+            s_led_state.color.r = r;
+            s_led_state.color.g = g;
+            s_led_state.color.b = b;
+            apply_leds();
+            s_led_state.color = prev; // keep original for next step
+            vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(step_ms));
+            s_led_state.fade_elapsed_ms += step_ms;
         } else {
-            // No animation, just wait
-            vTaskDelay(pdMS_TO_TICKS(100));
+            vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(100));
         }
     }
 }
 
-/**
- * @brief Start animation task
- */
+esp_err_t led_controller_fade_to(uint8_t r, uint8_t g, uint8_t b, uint32_t duration_ms)
+{
+    if (!s_initialized) {
+        ESP_LOGE(TAG, "LED controller not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+    s_led_state.fade_start = s_led_state.color;
+    s_led_state.fade_target.r = r;
+    s_led_state.fade_target.g = g;
+    s_led_state.fade_target.b = b;
+    s_led_state.fade_time_ms = duration_ms;
+    s_led_state.fade_elapsed_ms = 0;
+    s_led_state.animation = LED_ANIM_FADE;
+    start_animation_task();
+    ESP_LOGI(TAG, "Fade to RGB(%d,%d,%d) in %d ms", r, g, b, duration_ms);
+    return ESP_OK;
+}
+
 static void start_animation_task(void)
 {
     if (s_animation_task_handle != NULL) {
@@ -121,9 +174,6 @@ static void start_animation_task(void)
     }
 }
 
-/**
- * @brief Stop animation task
- */
 static void stop_animation_task(void)
 {
     if (s_animation_task_handle != NULL) {
@@ -368,11 +418,30 @@ esp_err_t led_controller_process_json(const char *json_str)
     cJSON *show_item = cJSON_GetObjectItem(root, "show");
     if (show_item != NULL && cJSON_IsString(show_item)) {
         const char *show_str = show_item->valuestring;
-        
         if (strcasecmp(show_str, "BLINK") == 0) {
             led_controller_set_animation(LED_ANIM_BLINK);
         } else if (strcasecmp(show_str, "NONE") == 0 || strcasecmp(show_str, "STATIC") == 0) {
             led_controller_set_animation(LED_ANIM_NONE);
+        } else if (strcasecmp(show_str, "FADE") == 0) {
+            // Parse fade_ms and color
+            int fade_ms = 1000;
+            cJSON *fade_item = cJSON_GetObjectItem(root, "fade_ms");
+            if (fade_item && cJSON_IsNumber(fade_item)) {
+                fade_ms = fade_item->valueint;
+            }
+            uint8_t r = s_led_state.color.r;
+            uint8_t g = s_led_state.color.g;
+            uint8_t b = s_led_state.color.b;
+            cJSON *color_item = cJSON_GetObjectItem(root, "color");
+            if (color_item && cJSON_IsObject(color_item)) {
+                cJSON *r_item = cJSON_GetObjectItem(color_item, "r");
+                cJSON *g_item = cJSON_GetObjectItem(color_item, "g");
+                cJSON *b_item = cJSON_GetObjectItem(color_item, "b");
+                if (cJSON_IsNumber(r_item)) r = r_item->valueint;
+                if (cJSON_IsNumber(g_item)) g = g_item->valueint;
+                if (cJSON_IsNumber(b_item)) b = b_item->valueint;
+            }
+            led_controller_fade_to(r, g, b, fade_ms);
         } else {
             ESP_LOGW(TAG, "Unknown animation: %s", show_str);
             success = false;

@@ -68,7 +68,7 @@ Alle Parameter sind optional und können kombiniert werden:
 ```
 - `intensity`: 0-255 (0 = LEDs AUS, >0 = LEDs AN)
 - `color`: RGB-Werte (0-255 pro Kanal)
-- `show`: Animation ("BLINK", "NONE")
+- `show`: Animation ("BLINK", "NONE", "FADE")
 
 **Beispiele:**
 ```json
@@ -86,6 +86,23 @@ Alle Parameter sind optional und können kombiniert werden:
 
 // Nur Farbe ändern (Helligkeit bleibt)
 {"color": {"r": 255, "g": 255, "b": 0}}
+// Sanftes Überblenden zu Blau in 2 Sekunden
+{"show": "FADE", "color": {"r": 0, "g": 0, "b": 255}, "fade_ms": 2000}
+```
+
+
+#### FADE-Animation
+
+Mit `"show": "FADE"` wird die LED von der aktuellen Farbe zur Ziel-Farbe übergeblendet. Die Startfarbe ist immer der aktuelle LED-Zustand zum Zeitpunkt des Befehls.
+
+- `color`: Ziel-Farbe (Pflichtfeld)
+- `fade_ms`: Dauer in Millisekunden (Pflichtfeld)
+
+Nach Ablauf der Zeit bleibt die LED auf der Ziel-Farbe stehen.
+
+**Beispiel:**
+```json
+{"show": "FADE", "color": {"r": 255, "g": 0, "b": 255}, "fade_ms": 1500}
 ```
 
 #### Text-Befehle
